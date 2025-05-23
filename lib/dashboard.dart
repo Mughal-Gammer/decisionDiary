@@ -412,7 +412,7 @@ class DecisionCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    DateFormat('MMM d, yyyy').format(date),
+                    DateFormat('dd-MM-yyyy').format(date),
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade600,
@@ -544,8 +544,9 @@ class _DecisionDetailsSheetState extends State<DecisionDetailsSheet> {
         ),
         const SizedBox(height: 8),
         Text(
-          DateFormat('MMMM d, yyyy').format(
-            DateTime.parse(widget.decision['date'] ?? DateTime.now().toString()),
+          DateFormat('dd-MM-yyyy').format(
+              DateTime.fromMillisecondsSinceEpoch(widget.decision['date'] ??
+                  DateTime.now().millisecondsSinceEpoch)
           ),
           style: TextStyle(
             fontSize: 14,

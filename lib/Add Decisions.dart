@@ -55,39 +55,58 @@ class _AddDecisionScreenState extends State<AddDecisionScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
 
 
+      final decisionRef = FirebaseDatabase.instance
+          .ref('users/${user?.uid}/decisions')
+          .push();
 
-      final _ref = FirebaseDatabase.instance.ref().child('users/${FirebaseAuth.instance.currentUser!.uid}/decisions');
-
-      await _ref.set({
+      await decisionRef.set({
         'title': _titleController.text.trim(),
         'date': DateFormat('dd-MM-yyyy').format(_selectedDate),
         'reason': _reasonController.text.trim(),
         'expectedOutcome': _expectedController.text.trim(),
         'finalOutcome': _finalController.text.trim(),
-        'id' : DateTime.now().millisecondsSinceEpoch.toString(),
+        'createdAt': ServerValue.timestamp,
+        'decisionId': decisionRef.key,
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Decision saved successfully')),
+          const SnackBar(
+            content: Text('✅ Decision saved'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true); // Return success flag
+      }
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ ${e.message ?? 'Failed to save'}'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save: ${e.toString()}'),
+          const SnackBar(
+            content: Text('⚠️ An unexpected error occurred'),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
+      debugPrint('Error saving decision: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
+
 
   InputDecoration _buildInputDecoration(String label, {String? hint}) {
     return InputDecoration(
