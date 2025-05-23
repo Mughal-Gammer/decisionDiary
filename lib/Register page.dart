@@ -25,6 +25,9 @@ class _SignUpPageState extends State<SignUpPage> {
   final _phone = TextEditingController();
   bool _isLoading = false;
 
+
+
+
   Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -33,25 +36,40 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     try {
-      // Step 1: Firebase Authentication
+      // Check if username already exists
+      final snapshot = await FirebaseDatabase.instance.ref("users").get();
+
+      bool usernameExists = false;
+      if (snapshot.value != null) {
+        final usersMap = snapshot.value as Map<dynamic, dynamic>;
+        usernameExists = usersMap.values.any((user) => user['UserName'] == _username.text.trim());
+      }
+
+      if (usernameExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Oops! That username is already registered.")),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
 
-      // Step 2: Save user data in Realtime Database
+      // Save user data to Realtime Database
       final userId = userCredential.user!.uid;
 
       await FirebaseDatabase.instance.ref("users/$userId").set({
-        'UserName' : _username.text.trim(),
-        'Email' : _email.text.trim(),
-        'Phone' : _phone.text.trim(),
-        'UserId' : userId,
-
-
-
-
+        'UserName': _username.text.trim().toLowerCase(),
+        'Email': _email.text.trim(),
+        'Phone': _phone.text.trim(),
+        'UserId': userId,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,7 +77,9 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => LoginPage()));
+        context,
+        MaterialPageRoute(builder: (_) => LoginPage()),
+      );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Registration failed')),
@@ -71,29 +91,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-
-  Future<void> _signInWithEmailAndPassword() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-      );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Authentication failed')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   void dispose() {

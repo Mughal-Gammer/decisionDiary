@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'Add Decisions.dart';
 import 'Register page.dart';
+import 'dashboard.dart';
 import 'firebase_options.dart';
 import 'login page.dart';
 
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AddDecisions(),
+      home: DashboardScreen(),
 
     );
   }

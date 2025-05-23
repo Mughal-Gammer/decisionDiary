@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
       // Navigate to DashboardPage after successful login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => Dashboardpage()),
+        MaterialPageRoute(builder: (_) => DashboardScreen()),
       );
     } on FirebaseAuthException catch (e) {
       // Show error if login fails
