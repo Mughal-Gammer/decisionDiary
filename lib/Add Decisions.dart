@@ -59,7 +59,7 @@ class _AddDecisionScreenState extends State<AddDecisionScreen> {
 
 
       final decisionRef = FirebaseDatabase.instance
-          .ref('users/${user?.uid}/decisions')
+          .ref('users/${user}/decisions')
           .push();
 
       await decisionRef.set({
